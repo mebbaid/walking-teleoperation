@@ -1,10 +1,5 @@
-/**
- * @file FaceExpressionsRetargeting.cpp
- * @authors Stefano Dafarra <stefano.dafarra@iit.it>
- * @copyright 2021 iCub Facility - Istituto Italiano di Tecnologia
- *            Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
- * @date 2021
- */
+// SPDX-FileCopyrightText: Fondazione Istituto Italiano di Tecnologia (IIT)
+// SPDX-License-Identifier: BSD-3-Clause
 
 #include <FaceExpressionsRetargeting.hpp>
 #include <yarp/os/LogStream.h>
@@ -24,6 +19,19 @@ void FaceExpressionsRetargeting::sendFaceExpression(const std::string &part, con
         m_emotionsOutputPort.write(cmd, reply);
         m_currentExpressions[part] = emotion;
         yInfo() << "[FaceExpressionsRetargeting::sendFaceExpression] Sending" << emotion << "to" << part;
+    }
+}
+
+void FaceExpressionsRetargeting::sendEyeExpression(const std::string &emotion)
+{
+    if (emotion != m_currentEyeExpression)
+    {
+        yarp::os::Bottle cmd, reply;
+        cmd.addString("setEmotion");
+        cmd.addString(emotion);
+        m_eyeExpressionsOutputPort.write(cmd, reply);
+        m_currentEyeExpression = emotion;
+        yInfo() << "[FaceExpressionsRetargeting::sendEyeExpression] Sending" << emotion;
     }
 }
 
@@ -49,9 +57,18 @@ bool FaceExpressionsRetargeting::configure(yarp::os::ResourceFinder &rf)
         return false;
     }
 
+    std::string eyeExpressionsPortOut = rf.check("eyeExpressionsOutputPortName", yarp::os::Value("/eyeExpressions:o"), "The name of the output port for the eye expressions.").asString();
+    if (!m_eyeExpressionsOutputPort.open("/" + name + eyeExpressionsPortOut))
+    {
+        yError() << "[SRanipalModule::configure] Failed to open /" + name + eyeExpressionsPortOut + " port.";
+        return false;
+    }
+
     m_lipExpressionThreshold = rf.check("lipExpressionThreshold", yarp::os::Value(0.2)).asFloat64();
     m_eyeWideSurprisedThreshold = rf.check("eyeWideSurprisedThreshold", yarp::os::Value(0.2)).asFloat64();
+    m_eyeClosedThreshold = rf.check("eyeClosedThreshold", yarp::os::Value(0.1)).asFloat64();
 
+    m_isHappy = false;
     m_configured = true;
 
     return true;
@@ -89,13 +106,16 @@ bool FaceExpressionsRetargeting::updateLip(const SRanipalInterface::LipExpressio
     }
 
     std::string mouthExpression = "neu";
+    m_isHappy = false;
     if (lipExpressions.mouthOpen > m_lipExpressionThreshold)
     {
         mouthExpression = "sur";
+        m_isHappy = true;
     }
     else if (lipExpressions.smile > m_lipExpressionThreshold)
     {
         mouthExpression = "hap";
+        m_isHappy = true;
     }
     else if (lipExpressions.sad > m_lipExpressionThreshold)
     {
@@ -104,11 +124,40 @@ bool FaceExpressionsRetargeting::updateLip(const SRanipalInterface::LipExpressio
 
     sendFaceExpression("mou", mouthExpression);
 
+    if (m_isHappy)
+    {
+        sendEyeExpression("happy");
+    }
+
+    return true;
+}
+
+bool FaceExpressionsRetargeting::updateEyeExpressions(double leftEyeOpennes, double rightEyeOpennes)
+{
+    if (!m_configured)
+    {
+        yError() << "[FaceExpressionsRetargeting::updateEyeExpressions] The face expressions retargeting is not configured.";
+        return false;
+    }
+
+    std::string emotion = "shy";
+
+    if (std::min(leftEyeOpennes, rightEyeOpennes) < m_eyeClosedThreshold)
+    {
+        emotion = "neutral";
+    }
+
+    if (!m_isHappy)
+    {
+        sendEyeExpression(emotion);
+    }
+
     return true;
 }
 
 void FaceExpressionsRetargeting::close()
 {
     m_emotionsOutputPort.close();
+    m_eyeExpressionsOutputPort.close();
     m_configured = false;
 }

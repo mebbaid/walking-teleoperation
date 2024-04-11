@@ -1,10 +1,5 @@
-/**
-     * @file EyelidsRetargeting.cpp
-     * @authors Stefano Dafarra <stefano.dafarra@iit.it>
-     * @copyright 2021 iCub Facility - Istituto Italiano di Tecnologia
-     *            Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
-     * @date 2021
-     */
+// SPDX-FileCopyrightText: Fondazione Istituto Italiano di Tecnologia (IIT)
+// SPDX-License-Identifier: BSD-3-Clause
 
 
 #include <EyelidsRetargeting.hpp>
@@ -222,9 +217,9 @@ bool EyelidsRetargeting::usingEylidsVelocityControl()
     return m_configured && !(m_useRawEyelids || m_useEyelidsPositionControl);
 }
 
-void EyelidsRetargeting::setDesiredEyeOpennes(double eyeOpennes)
+void EyelidsRetargeting::setDesiredEyeOpennes(double leftEyeOpennes, double rightEyeOpennes)
 {
-    m_desiredEyeOpenness = eyeOpennes;
+    m_desiredEyeOpenness = std::min(leftEyeOpennes, rightEyeOpennes);
 }
 
 bool EyelidsRetargeting::update()

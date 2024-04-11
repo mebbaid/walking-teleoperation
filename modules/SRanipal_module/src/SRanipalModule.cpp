@@ -1,10 +1,5 @@
-/**
- * @file SRanipalModule.cpp
- * @authors Stefano Dafarra <stefano.dafarra@iit.it>
- * @copyright 2021 iCub Facility - Istituto Italiano di Tecnologia
- *            Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
- * @date 2021
- */
+// SPDX-FileCopyrightText: Fondazione Istituto Italiano di Tecnologia (IIT)
+// SPDX-License-Identifier: BSD-3-Clause
 
 #include <SRanipalModule.hpp>
 #include <string>
@@ -22,6 +17,7 @@ bool SRanipalModule::configure(yarp::os::ResourceFinder &rf)
     m_useLip = !rf.check("noLip") || (!rf.find("noLip").isNull() && !rf.find("noLip").asBool()); //True if noLip is not set or set to false
     m_useEyelids = !rf.check("noEyelids") || (!rf.find("noEyelids").isNull() && !rf.find("noEyelids").asBool()); //True if noEyelids is not set or set to false
     m_useGaze = !rf.check("noGaze") || (!rf.find("noGaze").isNull() && !rf.find("noGaze").asBool()); // True if noGaze is not set or set to false
+    m_useEyeExpressions = !rf.check("noEyeExpressions") || (!rf.find("noEyeExpressions").isNull() && !rf.find("noEyeExpressions").asBool()); //True if noEyeExpressions is not set or set to false
     m_useAdvancedJoypad = m_advancedJoypad.enabled(rf);
 
     double defaultPeriod = 0.1;
@@ -35,7 +31,7 @@ bool SRanipalModule::configure(yarp::os::ResourceFinder &rf)
         yInfo() << "[SRanipalModule::configure] Skipping eyebrows control.";
     }
 
-    if (m_useEyebrows || m_useLip)
+    if (m_useEyebrows || m_useLip || m_useEyeExpressions)
     {
         if (!m_faceExpressions.configure(rf))
         {
@@ -56,7 +52,7 @@ bool SRanipalModule::configure(yarp::os::ResourceFinder &rf)
         }
     }
 
-    if (m_useEyebrows || m_useEyelids || m_useGaze || m_useAdvancedJoypad)
+    if (m_useEyebrows || m_useEyelids || m_useGaze || m_useAdvancedJoypad || m_useEyeExpressions)
     {
         if (m_useEyelids)
         {
@@ -136,7 +132,7 @@ bool SRanipalModule::configure(yarp::os::ResourceFinder &rf)
 
     m_period = rf.check("period", yarp::os::Value(defaultPeriod)).asFloat64();
 
-    if (m_useEyebrows || m_useEyelids || m_useGaze || m_useAdvancedJoypad) //Run the eye calibration as last thing
+    if (m_useEyebrows || m_useEyelids || m_useGaze || m_useAdvancedJoypad || m_useEyeExpressions) //Run the eye calibration as last thing
     {
         bool skipEyeCalibration = rf.check("skipEyeCalibration") && (rf.find("skipEyeCalibration").isNull() || rf.find("skipEyeCalibration").asBool());
         bool forceEyeCalibration = rf.check("forceEyeCalibration") && (rf.find("forceEyeCalibration").isNull() || rf.find("forceEyeCalibration").asBool());
@@ -180,7 +176,7 @@ bool SRanipalModule::updateModule()
 {
     std::lock_guard<std::mutex> lock(m_mutex);
 
-    if ((m_useEyebrows || m_useEyelids || m_useGaze || m_useAdvancedJoypad) && m_sranipalInterface.updateEyeData()) {
+    if ((m_useEyebrows || m_useEyelids || m_useGaze || m_useAdvancedJoypad || m_useEyeExpressions) && m_sranipalInterface.updateEyeData()) {
 
         double eyeWideness{0.0};
         if (m_useEyebrows && m_sranipalInterface.getEyeWideness(eyeWideness))
@@ -188,17 +184,22 @@ bool SRanipalModule::updateModule()
             m_faceExpressions.updateEyebrows(eyeWideness);
         }
 
-        double eye_openness;
-        if ((m_useEyelids || m_useAdvancedJoypad) && m_sranipalInterface.getEyeOpenness(eye_openness))
+        double left_eye_openness, right_eye_openness;
+        if ((m_useEyelids || m_useAdvancedJoypad || m_useEyeExpressions) && m_sranipalInterface.getEyeOpenness(left_eye_openness, right_eye_openness))
         {
             if (m_useEyelids)
             {
-                m_eyelidsRetargeting.setDesiredEyeOpennes(eye_openness);
+                m_eyelidsRetargeting.setDesiredEyeOpennes(left_eye_openness, right_eye_openness);
             }
 
             if (m_useAdvancedJoypad)
             {
-                m_advancedJoypad.setEyeOpenness(eye_openness);
+                m_advancedJoypad.setEyeOpenness(left_eye_openness, right_eye_openness);
+            }
+
+            if (m_useEyeExpressions)
+            {
+                m_faceExpressions.updateEyeExpressions(left_eye_openness, right_eye_openness);
             }
         }
 

@@ -1,10 +1,5 @@
-/**
- * @file Utils.hpp
- * @authors Giulio Romualdi <giulio.romualdi@iit.it>
- * @copyright 2018 iCub Facility - Istituto Italiano di Tecnologia
- *            Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
- * @date 2018
- */
+// SPDX-FileCopyrightText: Fondazione Istituto Italiano di Tecnologia (IIT)
+// SPDX-License-Identifier: BSD-3-Clause
 
 #ifndef WALKING_UTILS_HPP
 #define WALKING_UTILS_HPP
@@ -163,6 +158,17 @@ bool getVectorFromSearchable(const yarp::os::Searchable& config,
 bool getVectorFromSearchable(const yarp::os::Searchable& config,
                              const std::string& key,
                              std::vector<int>& output);
+
+/**
+ * Extract an int vector from a searchable object.
+ * @param config is the searchable object;
+ * @param key the name to check for;
+ * @param vector is the vector.
+ * @return true/false in case of success/failure
+ */
+bool getIntVectorFromSearchable(const yarp::os::Searchable& config,
+                                const std::string& key,
+                                std::vector<int>& output);
 
 /**
  * Merge two vectors. vector = [vector, t]

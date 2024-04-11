@@ -1,10 +1,5 @@
-/**
- * @file AdvancedJoypad.hpp
- * @authors Stefano Dafarra <stefano.dafarra@iit.it>
- * @copyright 2021 iCub Facility - Istituto Italiano di Tecnologia
- *            Released under the terms of the LGPLv2.1 or later, see LGPL.TXT
- * @date 2022
- */
+// SPDX-FileCopyrightText: Fondazione Istituto Italiano di Tecnologia (IIT)
+// SPDX-License-Identifier: BSD-3-Clause
 
 #ifndef ADVANCEDJOYPAD_HPP
 #define ADVANCEDJOYPAD_HPP
@@ -34,7 +29,7 @@ public:
 
     bool configure(const yarp::os::ResourceFinder& rf, std::shared_ptr<VRInterface> vrInterface);
 
-    void setEyeOpenness(double eyeOpenness);
+    void setEyeOpenness(double leftEyeOpennes, double rightEyeOpennes);
 
     bool update();
 
