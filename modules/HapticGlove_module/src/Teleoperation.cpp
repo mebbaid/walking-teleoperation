@@ -198,6 +198,13 @@ bool Teleoperation::configure(const yarp::os::Searchable& config,
             yWarning() << m_logPrefix << "Failed to attach" << portPrefix + rpcPortName << "to the RPC service";
         }
     }
+    // set the name of the port and open it
+
+    if (!m_robotJointReferencesPort.open(portPrefix + "/jointNamesAndReferences:o"))
+    {
+        yError() << m_logPrefix << "unable to open the robot joint references port.";
+        return false;
+    }
 
     // print information:
     yInfo() << m_logPrefix << "enable the logger: " << m_enableLogger;
@@ -364,6 +371,22 @@ bool Teleoperation::run()
         }
     }
 
+    // publish the joint references and thier names
+    std::vector<std::string> robotActuatedJointNameList;
+    m_robotController->controlHelper()->getActuatedJointNames(robotActuatedJointNameList);
+
+    yarp::os::Bottle& jointNamesAndReferences = m_robotJointReferencesPort.prepare();
+    jointNamesAndReferences.clear();
+    for (size_t i = 0; i < m_data.robotJointReferences.size(); i++)
+    {
+        jointNamesAndReferences.addString(robotActuatedJointNameList[i]);
+    }
+    for (size_t i = 0; i < m_data.robotJointReferences.size(); i++)
+    {
+        jointNamesAndReferences.addFloat64(m_data.robotJointReferences[i]);
+    }
+    m_robotJointReferencesPort.write();
+
     return true;
 }
 bool Teleoperation::prepare(bool& isPrepared)
@@ -490,6 +513,9 @@ bool Teleoperation::close()
 
     // close RPC port
     m_rpcPort.close();
+
+    // close the robot joint references port
+    m_robotJointReferencesPort.close();
 
     //  in order to be sure the stop haptic command is sent before closing the module, otherwise the
     //  glove may continue to provide the haptic feedback according to the last sent command.

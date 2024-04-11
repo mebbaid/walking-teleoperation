@@ -156,6 +156,8 @@ struct HapticGlove::Data
  */
 class HapticGlove::Teleoperation : HapticGloveTeleoperationService
 {
+    yarp::os::BufferedPort<yarp::os::Bottle> m_robotJointReferencesPort; /**< robot joint
+                                                                            references port for remote connections */
     std::string m_logPrefix; /**< log prefix */
 
     double m_dT; /**< module period. */
