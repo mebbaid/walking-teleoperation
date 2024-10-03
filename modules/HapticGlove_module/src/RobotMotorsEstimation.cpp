@@ -8,7 +8,7 @@
 
 using namespace HapticGlove;
 
-Estimators::Estimators(const int noMotors)
+Estimators::Estimators(size_t noMotors)
 {
     m_numOfMotors = noMotors;
     m_isInitialized = false;
@@ -66,6 +66,7 @@ bool Estimators::configure(const yarp::os::Searchable& config, const std::string
     }
 
     m_z = Eigen::MatrixXd::Zero(no_measurement_kf, 1);
+    m_n = 3; // joint/motor position, velocity, acceleration
 
     m_x_hat = Eigen::MatrixXd::Zero(no_measurement_kf, 1);
     m_P.resize(no_states_kf * no_states_kf);
@@ -113,17 +114,20 @@ bool Estimators::getInfo(Eigen::VectorXd& estimatedValues,
 {
     if (estimatedValues.size() != m_numOfMotors)
     {
-        estimatedValues.resize(m_numOfMotors, 0.0);
+        estimatedValues.resize(m_numOfMotors);
+        estimatedValues.setZero();
     }
 
     if (estimatedVelocities.size() != m_numOfMotors)
     {
-        estimatedValues.resize(m_numOfMotors, 0.0);
+        estimatedVelocities.resize(m_numOfMotors);
+        estimatedVelocities.setZero();
     }
 
     if (estimatedAccelerations.size() != m_numOfMotors)
     {
-        estimatedValues.resize(m_numOfMotors, 0.0);
+        estimatedAccelerations.resize(m_numOfMotors);
+        estimatedAccelerations.setZero();
     }
 
     if (P.rows() != m_numOfMotors && P.cols() == m_n * m_n)

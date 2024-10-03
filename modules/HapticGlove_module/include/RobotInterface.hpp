@@ -61,7 +61,7 @@ class HapticGlove::RobotInterface
 
     bool m_rightHand; /**< if the right hand is used, the variable is true*/
 
-    int m_noActuatedAxis; /**< Number of the actuated axis of the robot hand */
+    size_t m_noActuatedAxis; /**< Number of the actuated axis of the robot hand */
     size_t
         m_noAnalogSensor; /**< Number of the analog joints ( associated with the analog sensors) */
     size_t m_noAllJoints; /**< Number of all the robot hand joints ( associated with the analog &
@@ -512,31 +512,31 @@ public:
      * Get the number of actuated axis/motors
      * @return the number of actuated axis/motors
      */
-    const int getNumberOfActuatedAxis() const;
+    size_t getNumberOfActuatedAxis() const;
 
     /**
      * Get the number of all axis/motors related to the used parts (robot hand)
      * @return the number of all axis/motors
      */
-    const int getNumberOfAllAxis() const;
+    size_t getNumberOfAllAxis() const;
 
     /**
      * Get the number of all the joints related to the robot used parts (robot hand)
      * @return the number of all the joints
      */
-    const int getNumberOfAllJoints() const;
+    size_t getNumberOfAllJoints() const;
 
     /**
      * Get the number of actuated joints of the used parts (robot hand)
      * @return the number of actuated joints
      */
-    const int getNumberOfActuatedJoints() const;
+    size_t getNumberOfActuatedJoints() const;
 
     /**
      * Get the number of iCub robot hand fingers
      * @return the number of icub robot hand fingers
      */
-    const int getNumberOfRobotFingers() const;
+    size_t getNumberOfRobotFingers() const;
 
     /**
      * Get the name of the robot fingers
@@ -548,7 +548,7 @@ public:
      * Get the name of the actuated joints
      * @param names the names of the actuated joints
      */
-    void getActuatedJointNames(std::vector<std::string>& names) const;
+    const std::vector<std::string>& getActuatedJointNames() const;
 
     /**
      * Get the name of the all the joints related to the used parts (robot hand)
@@ -560,7 +560,7 @@ public:
      * Get the name of the actuated axes
      * @param names the names of the actuated axes
      */
-    void getActuatedAxisNames(std::vector<std::string>& names) const;
+    const std::vector<std::string>& getActuatedAxisNames() const;
 
     /**
      * Get the name of the all the axes related to the used parts (robot hand)

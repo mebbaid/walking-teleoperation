@@ -94,6 +94,12 @@ public:
     bool getHandJointAngles(std::vector<double>& jointAngles);
 
     /**
+     * Set the desired haptic feedback reference to the user fingertip
+     * @return true/false in case of success/failure
+     */
+    bool sendFingertipHapticFeedbackReferences();
+
+    /**
      * Set the desired force feedback reference to the user fingertip
      * @param desiredValue desired force feedback values
      * @return true/false in case of success/failure
@@ -156,10 +162,9 @@ public:
 
     /**
      * Get the list of the human hand joint names
-     * @param jointNameList human hand joints name list
-     * @return true/false in case of success/failure
+     * @return human hand joints name list
      */
-    bool getHumanHandJointsNames(std::vector<std::string>& jointNameList) const;
+    const std::vector<std::string>& getHumanHandJointsNames() const;
 
     /**
      * Get the name of a finger given the index of the finger in the list
@@ -171,10 +176,9 @@ public:
 
     /**
      * Get the list of the human finger names
-     * @param fingerNameList human hand fingers name list
-     * @return true/false in case of success/failure
+     * @return human hand fingers name list
      */
-    bool getHumanHandFingerNames(std::vector<std::string>& fingerNameList) const;
+    const std::vector<std::string>& getHumanHandFingerNames() const;
 
     /**
      * Find the range of the motion of the human finger joints of the hand

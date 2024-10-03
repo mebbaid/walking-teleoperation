@@ -44,3 +44,8 @@ build/
 TAGS
 compile_commands.json
 CMakeLists.txt.user
+.vscode/
+
+# Visual studio
+.vs/*
+CMakeSettings.json
